@@ -13,17 +13,27 @@ pipeline {
             }
         }
         stage('SonarQube Analysis') {
+            environment {
+                SCANNER_HOME = tool 'SonarScanner'
+            }
             steps {
-                script {
-                    withSonarQubeEnv('SonarServer') {
-                        echo 'Running SonarQube analysis...'
-                        sh '''
-                        sonar-scanner \
-                            -Dsonar.projectKey=DevOpPipeline \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.login=<YOUR_SONARQUBE_TOKEN>
-                        '''
-                    }
+                withSonarQubeEnv('SonarServer') {
+                    sh """
+                        ${SCANNER_HOME}/bin/sonar-scanner \
+                        -Dsonar.projectKey=DevOpPipeline \
+                        -Dsonar.projectName=DevOpPipeline \
+                        -Dsonar.sources=. \
+                        -Dsonar.sourceEncoding=UTF-8 \
+                        -Dsonar.language=html \
+                        -Dsonar.inclusions=**/*.html,**/*.htm \
+                        -Dsonar.exclusions=**/node_modules/**,**/bower_components/** \
+                        -Dsonar.host.url=${SONAR_HOST_URL} \
+                        -Dsonar.login=${SONAR_AUTH_TOKEN}
+                    """
+                }
+                // Optional: Wait for quality gate result
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
