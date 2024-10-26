@@ -12,41 +12,30 @@ pipeline {
                 git branch: 'test', url: 'https://github.com/echuwok12/Deployment_Project.git', credentialsId: 'github-key'
             }
         }
+    stages {
         stage('SonarQube Analysis') {
-            environment {
-                SCANNER_HOME = tool 'SonarScanner'
-            }
             steps {
                 withSonarQubeEnv('SonarServer') {
                     sh """
-                        ${SCANNER_HOME}/bin/sonar-scanner \
+                        sonar-scanner \
                         -Dsonar.projectKey=DevOpPipeline \
-                        -Dsonar.projectName=DevOpPipeline \
+                        -Dsonar.projectName='DevOps Pipeline' \
+                        -Dsonar.projectVersion=1.0 \
                         -Dsonar.sources=. \
+                        -Dsonar.java.binaries=target/classes \
                         -Dsonar.sourceEncoding=UTF-8 \
-                        -Dsonar.language=html \
-                        -Dsonar.inclusions=**/*.html,**/*.htm \
-                        -Dsonar.exclusions=**/node_modules/**,**/bower_components/** \
                         -Dsonar.host.url=${SONAR_HOST_URL} \
                         -Dsonar.login=${SONAR_AUTH_TOKEN}
                     """
                 }
-                // Optional: Wait for quality gate result
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
             }
         }
+        
         stage('Quality Gate') {
             steps {
-                script {
-                    // Check SonarQube Quality Gate
-                    timeout(time: 2, unit: 'MINUTES') {
-                        def qualityGate = waitForQualityGate()
-                        if (qualityGate.status != 'OK') {
-                            error "Quality gate failed: ${qualityGate.status}"
-                        }
-                    }
+                timeout(time: 1, unit: 'MINUTE') {
+                    // Wait for SonarQube Quality Gate
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
