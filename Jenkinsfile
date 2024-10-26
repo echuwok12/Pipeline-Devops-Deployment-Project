@@ -28,7 +28,7 @@ pipeline {
                        
                        // Stop any existing container and run the new one
                        sh '''
-                       ssh azureuser@20.2.217.99 "
+                      ssh -o StrictHostKeyChecking=no azureuser@20.2.217.99 "
                            docker stop old-container || true && docker rm old-container || true &&
                            docker run -d --name new-container -p 80:80 ${DOCKER_IMAGE}"
                        '''
