@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         SONAR_HOST_URL = 'http://20.255.48.4:9000'
-        SONARQUBE_SCANNER = 'sonar-scanner' // Corrected to use the command for sonar-scanner
+        SONARQUBE_SCANNER = 'SonarServer' // Name of the SonarQube scanner tool configured in Jenkins
         DOCKER_IMAGE = 'deployment_project:latest'
     }
     stages {
@@ -15,15 +15,15 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    withSonarQubeEnv('SonarServer') {
-                        // Run SonarQube analysis
-                        sh '''
-                        sonar-scanner \
-                            -Dsonar.projectKey=deployment_project \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.login=<YOUR_SONARQUBE_TOKEN>
-                        '''
-                    }
+                    // Specify the SonarQube scanner installation
+                    scannerHome = tool(SONARQUBE_SCANNER)
+                }
+                withSonarQubeEnv('SonarServer') { // Your SonarQube installation name
+                    // Run the SonarQube scanner with project key
+                    sh "${scannerHome}/bin/sonar-scanner " +
+                       "-Dsonar.projectKey=DevOpPipeline " + // Your project key
+                       "-Dsonar.host.url=${SONAR_HOST_URL} " + // Your SonarQube server URL
+                       "-Dsonar.login=<YOUR_SONARQUBE_TOKEN>" // Optional: your SonarQube token if required
                 }
             }
         }
@@ -54,7 +54,7 @@ pipeline {
                     sshagent(['prod-server']) {
                         // Save the Docker image and transfer it to the production server
                         sh "docker save ${DOCKER_IMAGE} | ssh user@20.2.217.99 'docker load'"
-                        
+
                         // Stop any existing container and run the new one
                         sh '''
                         ssh user@20.2.217.99 "
