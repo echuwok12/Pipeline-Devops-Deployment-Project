@@ -4,7 +4,10 @@ pipeline {
         SONAR_HOST_URL = 'http://20.255.48.4:9000'
         SONARQUBE_SCANNER = 'SonarScanner' // Name of the SonarQube scanner tool configured in Jenkins
         DOCKER_IMAGE = 'deployment_project:latest'
+        SONAR_PROJECT_KEY = 'DevOpPipeline'
+        SONAR_PROJECT_NAME = 'DevOpPipeline'
     }
+    
     stages {
         stage('Checkout') {
             steps {
@@ -12,30 +15,35 @@ pipeline {
                 git branch: 'test', url: 'https://github.com/echuwok12/Deployment_Project.git', credentialsId: 'github-key'
             }
         }
+        
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarServer') {
                     sh """
-                        ${SCANNER_HOME}/bin/sonar-scanner \\
-                        -Dsonar.projectKey=DevOpPipeline \\
-                        -Dsonar.projectName=DevOpPipeline \\
-                        -Dsonar.sources=. \\
-                        -Dsonar.sourceEncoding=UTF-8
+                        ${SCANNER_HOME}/bin/sonar-scanner \
+                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                        -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=${SONAR_HOST_URL} \
+                        -Dsonar.sourceEncoding=UTF-8 \
+                        -Dsonar.language=html \
+                        -Dsonar.inclusions=*.html \
+                        -Dsonar.exclusions=**/node_modules/**,**/*.spec.js \
+                        -Dsonar.host.url=${SONAR_HOST_URL}
                     """
                 }
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
             }
-        }      
+        }
+        
         stage('Quality Gate') {
             steps {
-                timeout(time: 1, unit: 'MINUTES') {
+                timeout(time: 2, unit: 'MINUTES') {
                     // Wait for SonarQube Quality Gate
                     waitForQualityGate abortPipeline: true
                 }
             }
         }
+        
         stage('Build Docker Image') {
             steps {
                 script {
@@ -44,6 +52,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Push Docker Image to Production Server') {
             steps {
                 script {
@@ -62,12 +71,17 @@ pipeline {
             }
         }
     }
+    
     post {
         success {
             echo 'Deployment successful!'
         }
         failure {
             echo 'Deployment failed.'
+        }
+        always {
+            // Clean workspace after build
+            cleanWs()
         }
     }
 }
