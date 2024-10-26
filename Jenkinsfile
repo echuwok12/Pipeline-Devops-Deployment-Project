@@ -23,17 +23,15 @@ pipeline {
         stage('Push Docker Image to Production Server') {
             steps {
                 script {
-                    sshagent(['prod-server']) {
-                        // Save the Docker image and transfer it to the production server
-                        sh "docker save ${DOCKER_IMAGE} | ssh azureuser@20.2.217.99 'docker load'"
-                        
-                        // Stop any existing container and run the new one
-                        sh '''
-                        ssh azureuser@20.2.217.99 "
-                            docker stop old-container || true && docker rm old-container || true &&
-                            docker run -d --name new-container -p 80:80 ${DOCKER_IMAGE}"
-                        '''
-                    }
+                    // Save the Docker image and transfer it to the production server
+                    sh "docker save ${DOCKER_IMAGE} | ssh azureuser@20.2.217.99 'docker load'"
+                    
+                    // Stop any existing container and run the new one
+                    sh '''
+                    ssh azureuser@20.2.217.99 "
+                        docker stop old-container || true && docker rm old-container || true &&
+                        docker run -d --name new-container -p 80:80 ${DOCKER_IMAGE}"
+                    '''
                 }
             }
         }
