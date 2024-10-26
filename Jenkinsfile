@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         SONAR_HOST_URL = 'http://20.255.48.4:9000'
-        SONARQUBE_SCANNER = 'SonarServer' // Name of the SonarQube scanner tool configured in Jenkins
+        SONARQUBE_SCANNER = 'SonarScanner' // Name of the SonarQube scanner tool configured in Jenkins
         DOCKER_IMAGE = 'deployment_project:latest'
     }
     stages {
