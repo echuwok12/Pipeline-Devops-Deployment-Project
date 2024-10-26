@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DOCKER_IMAGE = 'deployment_project:latest'
+        DOCKER_IMAGE = 'test:latest'
     }
     
     stages {
@@ -33,6 +33,7 @@ pipeline {
                         docker run -d --name new-container -p 80:80 ${DOCKER_IMAGE}"
                     '''
                 }
+            }
         }
     }
     post {
