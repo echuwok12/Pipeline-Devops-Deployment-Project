@@ -18,17 +18,20 @@ pipeline {
                     sh "docker build -t ${DOCKER_IMAGE} ."
                 }
             }
-        }
-        
+        }     
         stage('Push Docker Image to Production Server') {
            steps {
-                script {
-                    // Use the configured "Production Server" in the Server group center
-                    sshCommand remote: 'Production Server', command: """
-                        docker load < <(docker save ${DOCKER_IMAGE}) &&
+               script {
+                sshagent(['prod-server']) {
+                    // Save the Docker image and transfer it to the production server
+                    sh "docker save ${DOCKER_IMAGE} | ssh azureuser@20.2.217.99 'docker load'"
+                    
+                    // Stop any existing container and run the new one
+                    sh '''
+                    ssh azureuser@20.2.217.99 "
                         docker stop old-container || true && docker rm old-container || true &&
-                        docker run -d --name new-container -p 80:80 ${DOCKER_IMAGE}
-                    """
+                        docker run -d --name new-container -p 80:80 ${DOCKER_IMAGE}"
+                    '''
                 }
             }
         }
