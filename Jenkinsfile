@@ -23,11 +23,11 @@ pipeline {
             steps {
                 script {
                                            // Save the Docker image and transfer it to the production server
-                        sh "docker save ${DOCKER_IMAGE} | ssh -o StrictHostKeyChecking=no azureuser@20.2.217.99 'docker load'"
+                        sh "docker save ${DOCKER_IMAGE} | ssh -o StrictHostKeyChecking=no -v azureuser@20.2.217.99 'docker load'"
                         
                         // Stop any existing container and run the new one
                         sh '''
-                        ssh -o StrictHostKeyChecking=no azureuser@20.2.217.99 "
+                        ssh -o StrictHostKeyChecking=no -v azureuser@20.2.217.99 "
                             docker stop old-container || true && docker rm old-container || true &&
                             docker run -d --name new-container -p 80:80 ${DOCKER_IMAGE}"
                         '''             
