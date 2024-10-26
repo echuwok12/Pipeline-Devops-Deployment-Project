@@ -15,7 +15,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    withSonarQubeEnv('Sonar Server') { // Use the correct SonarQube server name
+                    withSonarQubeEnv('SonarServer') { // Use the correct SonarQube server name
                         // Run SonarQube analysis
                         sh "${SONARQUBE_SCANNER} -Dsonar.projectKey=deployment_project -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=<YOUR_SONARQUBE_TOKEN>"
                     }
