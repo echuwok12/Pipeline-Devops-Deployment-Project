@@ -22,17 +22,15 @@ pipeline {
         stage('Push Docker Image to Production Server') {
             steps {
                 script {
-                    sshagent(['prod-server']) {
-                        // Save the Docker image and transfer it to the production server
-                        sh "docker save ${DOCKER_IMAGE} | ssh -o StrictHostKeyChecking=no -v azureuser@20.2.217.99 'docker load'"
-                        
-                        // Stop any existing container and run the new one
-                        sh '''
-                        ssh -o StrictHostKeyChecking=no azureuser@20.2.217.99 "
-                            docker stop old-container || true && docker rm old-container || true &&
-                            docker run -d --name new-container -p 80:80 ${DOCKER_IMAGE}"
-                        '''
-                    }
+                    // Define the username and password from the credentials
+                    def sshCredentials = 'prod-server' // Replace with your credentials ID
+                    def username = 'azureuser' // Your SSH username
+                    def password = 'Bachtapro167@' // Your SSH password
+
+                    // Use the password to SSH
+                    sh """
+                        echo $password | sshpass ssh -o StrictHostKeyChecking=no $username@20.2.217.99 "docker load"
+                    """
                 }
             }
         }
