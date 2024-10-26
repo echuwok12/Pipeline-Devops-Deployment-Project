@@ -33,7 +33,6 @@ pipeline {
                         docker run -d --name new-container -p 80:80 ${DOCKER_IMAGE}"
                     '''
                 }
-            }
         }
     }
     post {
