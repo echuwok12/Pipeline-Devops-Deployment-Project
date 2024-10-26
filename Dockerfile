@@ -5,7 +5,7 @@ FROM nginx:latest
 RUN rm -rf /usr/share/nginx/html/*
 
 # Copy your HTML files to the NGINX web root directory
-COPY ./your-html-folder /usr/share/nginx/html
+COPY . /usr/share/nginx/html
 
 # Expose port 80 to allow external access
 EXPOSE 80
