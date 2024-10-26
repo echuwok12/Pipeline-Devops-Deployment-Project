@@ -24,11 +24,11 @@ pipeline {
                script {
                    sshagent(['prod-server']) {
                        // Save the Docker image and transfer it to the production server
-                       sh "docker save ${DOCKER_IMAGE} | ssh azureuser@20.2.218.210 'docker load'"
+                       sh "docker save ${DOCKER_IMAGE} | ssh -i /var/lib/jenkins/workspace/Test@tmp/private_key_6140072313393226303.key azureuser@20.2.217.99 docker load'"
                        
                        // Stop any existing container and run the new one
                        sh '''
-                      ssh -o StrictHostKeyChecking=no azureuser@20.2.218.210 "
+                      ssh -i /var/lib/jenkins/workspace/Test@tmp/private_key_6140072313393226303.key azureuser@20.2.217.99 docker load "
                            docker stop old-container || true && docker rm old-container || true &&
                            docker run -d --name new-container -p 80:80 ${DOCKER_IMAGE}"
                        '''
