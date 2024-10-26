@@ -24,7 +24,7 @@ pipeline {
                 script {
                     sshagent(['prod-server']) {
                         // Save the Docker image and transfer it to the production server
-                        sh "docker save ${DOCKER_IMAGE} | ssh -o StrictHostKeyChecking=no azureuser@20.2.217.99 'docker load'"
+                        sh "docker save ${DOCKER_IMAGE} | ssh -o StrictHostKeyChecking=no -v azureuser@20.2.217.99 'docker load'"
                         
                         // Stop any existing container and run the new one
                         sh '''
