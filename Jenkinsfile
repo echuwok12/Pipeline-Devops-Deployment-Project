@@ -16,16 +16,15 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarServer') {
                     sh """
-                        sonar-scanner \
-                        -Dsonar.projectKey=DevOpPipeline \
-                        -Dsonar.projectName='DevOps Pipeline' \
-                        -Dsonar.projectVersion=1.0 \
-                        -Dsonar.sources=. \
-                        -Dsonar.java.binaries=target/classes \
-                        -Dsonar.sourceEncoding=UTF-8 \
-                        -Dsonar.host.url=${SONAR_HOST_URL} \
-                        -Dsonar.login=${SONAR_AUTH_TOKEN}
+                        ${SCANNER_HOME}/bin/sonar-scanner \\
+                        -Dsonar.projectKey=DevOpPipeline \\
+                        -Dsonar.projectName=DevOpPipeline \\
+                        -Dsonar.sources=. \\
+                        -Dsonar.sourceEncoding=UTF-8
                     """
+                }
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }      
