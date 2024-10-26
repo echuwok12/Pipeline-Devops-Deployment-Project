@@ -12,7 +12,6 @@ pipeline {
                 git branch: 'test', url: 'https://github.com/echuwok12/Deployment_Project.git', credentialsId: 'github-key'
             }
         }
-    stages {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarServer') {
@@ -29,8 +28,7 @@ pipeline {
                     """
                 }
             }
-        }
-        
+        }      
         stage('Quality Gate') {
             steps {
                 timeout(time: 1, unit: 'MINUTE') {
