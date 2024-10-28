@@ -80,6 +80,29 @@ pipeline {
                 }
             }
         }
+        stage('Verify Website') {
+    steps {
+        script {
+            withCredentials([sshUserPrivateKey(credentialsId: 'docker-prod-server', keyFileVariable: 'SSH_KEY')]) {
+                sh """#!/bin/bash
+                    ssh -i "\${SSH_KEY}" -o StrictHostKeyChecking=no ${PROD_SERVER} '
+                        # Check if nginx is running
+                        docker exec new-container nginx -t
+                        
+                        # Check if the site is accessible locally
+                        curl -f http://localhost:80 || echo "Website not accessible"
+                        
+                        # Check nginx logs
+                        docker logs new-container
+                        
+                        # Check mounted content
+                        docker exec new-container ls -la /usr/share/nginx/html/
+                    '
+                """
+            }
+        }
+    }
+}
     }
     
     post {
