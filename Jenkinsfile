@@ -22,7 +22,7 @@ pipeline {
         stage('Push Docker Image to Production Server') {
             steps {
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'docker-prod-server', keyFileVariable: 'SSH_KEY')]) {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'prod-server', keyFileVariable: 'SSH_KEY')]) {
                         sh """
                             docker save ${DOCKER_IMAGE} | ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${PROD_SERVER} 'docker load'
                             
