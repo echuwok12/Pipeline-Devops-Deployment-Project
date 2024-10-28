@@ -22,18 +22,18 @@ pipeline {
         stage('Push Docker Image to Production Server') {
             steps {
                 script {
-                                           // Save the Docker image and transfer it to the production server
-                        sh "docker save ${DOCKER_IMAGE} | ssh -o StrictHostKeyChecking=no -v azureuser@20.2.217.99 'docker load'"
-                        
-                        // Stop any existing container and run the new one
-                        sh '''
-                        ssh -o StrictHostKeyChecking=no -v azureuser@20.2.217.99 "
-                            docker stop old-container || true && docker rm old-container || true &&
-                            docker run -d --name new-container -p 80:80 ${DOCKER_IMAGE}"
-                        '''             
+                    withCredentials([sshUserPrivateKey(credentialsId: 'docker-prod-server', keyFileVariable: 'SSH_KEY')]) {
+                        sh """
+                            docker save ${DOCKER_IMAGE} | ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${PROD_SERVER} 'docker load'
+                            
+                            ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${PROD_SERVER} '
+                                docker stop old-container || true && 
+                                docker rm old-container || true &&
+                                docker run -d --name new-container -p 80:80 ${DOCKER_IMAGE}'
+                        """
+                    }
                 }
             }
-        }
     }
     post {
         success {
