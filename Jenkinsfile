@@ -83,7 +83,7 @@ pipeline {
         stage('Verify Website') {
     steps {
         script {
-            withCredentials([sshUserPrivateKey(credentialsId: 'docker-prod-server', keyFileVariable: 'SSH_KEY')]) {
+            withCredentials([sshUserPrivateKey(credentialsId: 'prod-server', keyFileVariable: 'SSH_KEY')]) {
                 sh """#!/bin/bash
                     ssh -i "\${SSH_KEY}" -o StrictHostKeyChecking=no ${PROD_SERVER} '
                         # Check if nginx is running
