@@ -31,27 +31,30 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'prod-server', keyFileVariable: 'SSH_KEY')]) {
-                        // Save and transfer Docker image
-                        sh """
-                            docker save ${DOCKER_IMAGE} | ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${PROD_SERVER} 'docker load'
+                        // First verify if we can connect to the server
+                        sh """#!/bin/bash
+                            ssh -i "\${SSH_KEY}" -o StrictHostKeyChecking=no ${PROD_SERVER} 'echo "SSH connection successful"'
                         """
                         
-                        // Stop existing container, remove it, and run new one
-                        sh """
-                            ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${PROD_SERVER} '
+                        // Save and transfer Docker image
+                        sh """#!/bin/bash
+                            docker save ${DOCKER_IMAGE} | ssh -i "\${SSH_KEY}" -o StrictHostKeyChecking=no ${PROD_SERVER} 'docker load'
+                        """
+                        
+                        // Deploy the container
+                        sh """#!/bin/bash
+                            ssh -i "\${SSH_KEY}" -o StrictHostKeyChecking=no ${PROD_SERVER} '
                                 # Stop and remove existing container if it exists
                                 docker stop new-container || true
                                 docker rm new-container || true
                                 
-                                # Remove old image to free up space
-                                docker rmi ${DOCKER_IMAGE} || true
-                                
                                 # Run new container
-                                docker run -d \
-                                    --name new-container \
-                                    --restart unless-stopped \
-                                    -p 80:80 \
-                                    ${DOCKER_IMAGE}'
+                                docker run -d \\
+                                    --name new-container \\
+                                    --restart unless-stopped \\
+                                    -p 80:80 \\
+                                    ${DOCKER_IMAGE}
+                            '
                         """
                     }
                 }
@@ -62,14 +65,16 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'prod-server', keyFileVariable: 'SSH_KEY')]) {
-                        // Check if container is running
-                        sh """
-                            ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${PROD_SERVER} '
+                        sh """#!/bin/bash
+                            ssh -i "\${SSH_KEY}" -o StrictHostKeyChecking=no ${PROD_SERVER} '
                                 if [ \$(docker ps -q -f name=new-container) ]; then
                                     echo "Container is running successfully"
+                                    docker ps -f name=new-container
                                 else
-                                    echo "Container failed to start" && exit 1
-                                fi'
+                                    echo "Container failed to start"
+                                    exit 1
+                                fi
+                            '
                         """
                     }
                 }
@@ -80,34 +85,22 @@ pipeline {
     post {
         success {
             echo 'Deployment successful!'
-            
-            // Optional: Clean up local Docker image
-            script {
-                sh """
-                    docker rmi ${DOCKER_IMAGE} || true
-                """
-            }
         }
         failure {
             echo 'Deployment failed!'
             
-            // Optional: Rollback in case of failure
             script {
                 withCredentials([sshUserPrivateKey(credentialsId: 'prod-server', keyFileVariable: 'SSH_KEY')]) {
-                    sh """
-                        ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${PROD_SERVER} '
-                            # Stop and remove failed container
-                            docker stop new-container || true
-                            docker rm new-container || true
-                            
-                            # Remove failed image
-                            docker rmi ${DOCKER_IMAGE} || true'
+                    sh """#!/bin/bash
+                        ssh -i "\${SSH_KEY}" -o StrictHostKeyChecking=no ${PROD_SERVER} '
+                            docker logs new-container || true
+                            docker ps -a | grep new-container || true
+                        '
                     """
                 }
             }
         }
         always {
-            // Clean workspace after build
             cleanWs()
         }
     }
