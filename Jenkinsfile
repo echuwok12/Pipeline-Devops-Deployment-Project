@@ -17,7 +17,32 @@ pipeline {
                     credentialsId: 'github-key'
             }
         }
-        
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    def scannerHome = tool 'SonarScanner' // Make sure this matches your SonarQube Scanner installation name in Jenkins
+                    withSonarQubeEnv('SonarServer') { // This should match the name you configured in Jenkins
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=${SONAR_HOST_URL} \
+                            -Dsonar.java.binaries=. \
+                            -Dsonar.exclusions=**/target/**,**/node_modules/**,**/.git/**
+                        """
+                    }
+
+                    // Quality Gate
+                    timeout(time: 2, unit: 'MINUTES') {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                        }
+                    }
+                }
+            }
+        }
         stage('Build Docker Image') {
             steps {
                 script {
