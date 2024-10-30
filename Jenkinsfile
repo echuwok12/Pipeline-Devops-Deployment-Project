@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'test:latest'
         PROD_SERVER = 'azureuser@20.2.217.99'
+        SONAR_PROJECT_KEY = 'DevOpPipeline'
     }
     
     stages {
@@ -25,7 +26,7 @@ pipeline {
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                            -Dsonar.projectName=${SONAR_PROJECT_KEY} \
                             -Dsonar.sources=. \
                             -Dsonar.host.url=${SONAR_HOST_URL} \
                             -Dsonar.java.binaries=. \
