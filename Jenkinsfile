@@ -30,8 +30,6 @@ pipeline {
                             -Dsonar.sources=. \
                             -Dsonar.host.url=${SONAR_HOST_URL} \
                             -Dsonar.sourceEncoding=UTF-8 \
-                            -Dsonar.language=php \
-                            -Dsonar.php.file.suffixes=php \
                             -Dsonar.html.file.suffixes=html,htm \
                             -Dsonar.css.file.suffixes=css \
                             -Dsonar.exclusions=Dockerfile,Jenkinsfile,README.md,*.properties,*.json,*.yml,*.yaml,*.xml,node_modules/**,vendor/** \
