@@ -29,13 +29,18 @@ pipeline {
                             -Dsonar.projectName=${SONAR_PROJECT_KEY} \
                             -Dsonar.sources=. \
                             -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.java.binaries=. \
-                            -Dsonar.exclusions=**/target/**,**/node_modules/**,**/.git/**
+                            -Dsonar.sourceEncoding=UTF-8 \
+                            -Dsonar.language=php \
+                            -Dsonar.php.file.suffixes=php \
+                            -Dsonar.html.file.suffixes=html,htm \
+                            -Dsonar.css.file.suffixes=css \
+                            -Dsonar.exclusions=Dockerfile,Jenkinsfile,README.md,*.properties,*.json,*.yml,*.yaml,*.xml,node_modules/**,vendor/** \
+                            -Dsonar.coverage.exclusions=**/*test*/**/*,**/*.min.js,**/*.min.css
                         """
                     }
 
                     // Quality Gate
-                    timeout(time: 2, unit: 'MINUTES') {
+                    timeout(time: 5, unit: 'MINUTES') {
                         def qg = waitForQualityGate()
                         if (qg.status != 'OK') {
                             error "Pipeline aborted due to quality gate failure: ${qg.status}"
