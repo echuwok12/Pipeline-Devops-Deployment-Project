@@ -57,6 +57,7 @@ h1, h2, p, i, address, .tm-text-white { color: white; }
 .tm-about,
 .tm-contact {
     display: flex;
+     padding: 50px 20px; 
 }
 
 .tm-contact { flex-direction: row-reverse; }
@@ -74,8 +75,6 @@ h1, h2, p, i, address, .tm-text-white { color: white; }
     padding-left: 50px;
     padding-right: 50px;
 }
-
-.tm-contact { padding: 50px 20px; }
 
 .tm-contact > div {
     padding-left: 34px;
