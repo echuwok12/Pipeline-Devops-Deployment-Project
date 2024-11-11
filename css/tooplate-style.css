@@ -68,9 +68,9 @@ h1, h2, p, i, address, .tm-text-white { color: white; }
 }
 
 .tm-contact-info { padding-top: 20px; }
-.tm-contact-header { width: 20%; }
 
 .tm-contact-header {
+     width: 20%; 
     padding-left: 50px;
     padding-right: 50px;
 }
